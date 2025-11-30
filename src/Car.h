@@ -37,6 +37,8 @@ public:
       : isFlashOn(false),
         currentAngleX(90),
         targetAngleX(90),
+        currentAngleY(90),
+        targetAngleY(90),
         lastUpdate(0),
         lastCommandTime(0),
         motorStopped(true),
@@ -49,9 +51,14 @@ public:
 
     initMotors();
 
-    bool res = servoX.attach(SERVO_X_PIN, 6);
-    Serial.printf("Servo X attach result: %s\n", res ? "SUCCESS" : "FAILURE");
+    bool resX = servoX.attach(SERVO_X_PIN, SERVO_X_CHANNEL);
+    Serial.printf("Servo X attach result: %s\n", resX ? "SUCCESS" : "FAILURE");
     servoX.write(90);
+    delay(100);
+
+    bool resY = servoY.attach(SERVO_Y_PIN, SERVO_Y_CHANNEL);
+    Serial.printf("Servo Y attach result: %s\n", resY ? "SUCCESS" : "FAILURE");
+    servoY.write(90);
     delay(100);
 
     lastCommandTime = nowMs();
@@ -65,7 +72,7 @@ public:
   }
 
   void tick() {
-    updateServo();
+    updateServos();
     tickAutoStop();
     motorL.tick();
     motorR.tick();
@@ -144,12 +151,25 @@ public:
     targetAngleX = map(x, -100, 100, 0, 180);
   }
 
+  void setCameraY(int y) {
+    y = constrain(y, -100, 100);
+    targetAngleY = map(y, -100, 100, 0, 180);
+  }
+
+  void setCameraPosition(int x, int y) {
+    setCameraX(x);
+    setCameraY(y);
+  }
+
 private:
   bool isFlashOn;
   Servo servoX;
+  Servo servoY;
 
   int currentAngleX;
   int targetAngleX;
+  int currentAngleY;
+  int targetAngleY;
   uint64_t lastUpdate;
 
   uint8_t motorMax = 255;
@@ -159,35 +179,51 @@ private:
   uint64_t lastCommandTime;
   bool motorStopped;
 
-  void updateServo() {
+  void updateServos() {
     uint64_t now = nowMs();
     const int stepDelay = 40;
-    
+    const int step = 2;
+
     if (now - lastUpdate < stepDelay) {
       return;
     }
 
     lastUpdate = now;
 
-    if (currentAngleX == targetAngleX) {
-      return;
-    }
+    // Update servo X
+    if (currentAngleX != targetAngleX) {
 
-    const int step = 2;
-    
-    if (currentAngleX < targetAngleX) {
-      currentAngleX += step;
-      if (currentAngleX > targetAngleX) {
-        currentAngleX = targetAngleX;
-      }
-    } else {
-      currentAngleX -= step;
       if (currentAngleX < targetAngleX) {
-        currentAngleX = targetAngleX;
+        currentAngleX += step;
+        if (currentAngleX > targetAngleX) {
+          currentAngleX = targetAngleX;
+        }
+      } else {
+        currentAngleX -= step;
+        if (currentAngleX < targetAngleX) {
+          currentAngleX = targetAngleX;
+        }
       }
+
+      servoX.write(currentAngleX);
     }
 
-    servoX.write(currentAngleX);
+    // Update servo Y
+    if (currentAngleY != targetAngleY) {
+      if (currentAngleY < targetAngleY) {
+        currentAngleY += step;
+        if (currentAngleY > targetAngleY) {
+          currentAngleY = targetAngleY;
+        }
+      } else {
+        currentAngleY -= step;
+        if (currentAngleY < targetAngleY) {
+          currentAngleY = targetAngleY;
+        }
+      }
+
+      servoY.write(currentAngleY);
+    }
   }
 
   void tickAutoStop() {
@@ -211,7 +247,6 @@ private:
     }
 
     sensor_t *s = esp_camera_sensor_get();
-    
     if (!s) {
       Serial.println("NO SENSOR DETECTED");
       return ESP_FAIL;

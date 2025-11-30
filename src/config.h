@@ -32,6 +32,10 @@
 
 // Car pin definitions
 #define SERVO_X_PIN 2
+#define SERVO_X_CHANNEL 6
+
+#define SERVO_Y_PIN 3
+#define SERVO_Y_CHANNEL 7
 
 #define RIGHT_MOTOR_IN1 12
 #define RIGHT_MOTOR_IN2 13
