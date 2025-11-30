@@ -72,27 +72,27 @@ void ledTask(void *param) {
 
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+  DEBUG_BEGIN();
 
-  Serial.begin(115200);
   Serial.setDebugOutput(true);
 
-  Serial.println("=== ESP32-CAM with WebSocket Flash Control ===");
+  DEBUG_PRINTLN("=== ESP32-CAM with WebSocket Flash Control ===");
   pinMode(33, OUTPUT);
 
   // blink indicate boot started
   blink(LED_PIN, 1, 1000);
 
   if (!LittleFS.begin(true)) {
-    Serial.println("LittleFS mount failed!");
+    DEBUG_PRINTLN("LittleFS mount failed!");
     blink(LED_PIN, 3); // error indication
 
     return;
   }
 
-  Serial.println("LittleFS mounted successfully");
+  DEBUG_PRINTLN("LittleFS mounted successfully");
 
   if (car.init() != ESP_OK) {
-    Serial.println("Reboot in 3 seconds...");
+    DEBUG_PRINTLN("Reboot in 3 seconds...");
     blink(LED_PIN, 3); // error indication
 
     delay(3000);
@@ -127,7 +127,7 @@ void setup() {
 
 void setupMDNS() {
   if (MDNS.begin("car")) {
-    Serial.println("mDNS responder started");
+    DEBUG_PRINTLN("mDNS responder started");
     MDNS.addService("car", "tcp", 80);
 
     mDNSStarted = true;
@@ -143,7 +143,7 @@ void setupMDNS() {
     return;
   }
 
-  Serial.println("Error setting up MDNS responder!");
+  DEBUG_PRINTLN("Error setting up MDNS responder!");
 }
 
 void loop() {
@@ -151,13 +151,13 @@ void loop() {
   wm.process();
 
   if (WiFi.status() == WL_CONNECTED && !mDNSStarted) {
-    Serial.print("WiFi connected! IP address: ");
-    Serial.println(WiFi.localIP());
+    DEBUG_PRINT("WiFi connected! IP address: ");
+    DEBUG_PRINTLN(WiFi.localIP());
     setupMDNS();
   }
 
   if (WiFi.status() != WL_CONNECTED && mDNSStarted) {
     mDNSStarted = false;
-    Serial.println("WiFi disconnected, mDNS stopped");
+    DEBUG_PRINTLN("WiFi disconnected, mDNS stopped");
   }
 }

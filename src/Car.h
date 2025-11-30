@@ -52,12 +52,12 @@ public:
     initMotors();
 
     bool resX = servoX.attach(SERVO_X_PIN, SERVO_X_CHANNEL);
-    Serial.printf("Servo X attach result: %s\n", resX ? "SUCCESS" : "FAILURE");
+    DEBUG_PRINTF_LN("Servo X attach result: %s", resX ? "SUCCESS" : "FAILURE");
     servoX.write(90);
     delay(100);
 
     bool resY = servoY.attach(SERVO_Y_PIN, SERVO_Y_CHANNEL);
-    Serial.printf("Servo Y attach result: %s\n", resY ? "SUCCESS" : "FAILURE");
+    DEBUG_PRINTF_LN("Servo Y attach result: %s", resY ? "SUCCESS" : "FAILURE");
     servoY.write(90);
     delay(100);
 
@@ -234,7 +234,7 @@ private:
 
     if (!motorStopped && (uint64_t)diff > AUTOSTOP_TIMEOUT_MS) {
       stop();
-      Serial.println("[AutoStop] No command for 500ms, stopping motors");
+      DEBUG_PRINTLN("[AutoStop] No command for 500ms, stopping motors");
     }
   }
 
@@ -242,20 +242,20 @@ private:
     esp_err_t err = esp_camera_init(&camera_config);
 
     if (err != ESP_OK) {
-      Serial.printf("Camera error: 0x%x\n", err);
+      DEBUG_PRINTF_LN("Camera error: 0x%x", err);
       return err;
     }
 
     sensor_t *s = esp_camera_sensor_get();
     if (!s) {
-      Serial.println("NO SENSOR DETECTED");
+      DEBUG_PRINTLN("NO SENSOR DETECTED");
       return ESP_FAIL;
     }
 
     s->set_framesize(s, FRAMESIZE_VGA);
     delay(100);
 
-    Serial.println("Camera initialized");
+    DEBUG_PRINTLN("Camera initialized");
     return ESP_OK;
   }
 

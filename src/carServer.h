@@ -22,10 +22,10 @@ void sendResponse(httpd_req_t *req, const char *message) {
 
   esp_err_t err = httpd_ws_send_frame(req, &res);
 
-  Serial.printf("Send: %s\n", message);
+  DEBUG_PRINTF_LN("Send: %s", message);
 
   if (err != ESP_OK) {
-    Serial.printf("Failed to send WS response: 0x%x\n", err);
+    DEBUG_PRINTF_LN("Failed to send WS response: 0x%x", err);
   }
 }
 
@@ -48,7 +48,7 @@ static esp_err_t serveStaticFile(httpd_req_t *req, const char *filepath) {
 
   File file = LittleFS.open(path, "r");
   if (!file) {
-    Serial.printf("404 Not Found: %s\n", path.c_str());
+    DEBUG_PRINTF_LN("404 Not Found: %s", path.c_str());
     httpd_resp_send_404(req);
     return ESP_FAIL;
   }
@@ -73,7 +73,7 @@ static esp_err_t serveStaticFile(httpd_req_t *req, const char *filepath) {
 }
 
 void handleCarCommand(const char *command, httpd_req_t *req) {
-  Serial.printf("Command handler received: %s\n", command);
+  DEBUG_PRINTF_LN("Command handler received: %s", command);
 
   if (strcmp(command, "toggleFlash") == 0) {
     car.toggleFlash();
@@ -105,7 +105,7 @@ void handleCarCommand(const char *command, httpd_req_t *req) {
     framesize_t newSize = stringToFrameSize(sizeName);
 
     s->set_framesize(s, newSize);
-    Serial.printf("✅ Frame size changed to %s\n", sizeName);
+    DEBUG_PRINTF_LN("✅ Frame size changed to %s", sizeName);
 
     return;
   }
@@ -182,12 +182,12 @@ void handleCarCommand(const char *command, httpd_req_t *req) {
     return;
   }
 
-  Serial.printf("Unknown command: %s\n", command);
+  DEBUG_PRINTF_LN("Unknown command: %s", command);
 }
 
 static esp_err_t websocketHandler(httpd_req_t *req) {
   if (req->method == HTTP_GET) {
-    Serial.println("WebSocket connection requested" + String(WiFi.status()));
+    DEBUG_PRINTLN("WebSocket connection requested" + String(WiFi.status()));
     const char *message = car.getFlashState() ? "Flash-ON" : "Flash-OFF";
 
     sendResponse(req, message);
@@ -204,9 +204,9 @@ static esp_err_t websocketHandler(httpd_req_t *req) {
       char frameMsg[64];
       snprintf(frameMsg, sizeof(frameMsg), "FRAMESIZE-%s", frameSizeName);
       sendResponse(req, frameMsg);
-      Serial.printf("📸 Current frame size: %s\n", frameSizeName);
+      DEBUG_PRINTF_LN("📸 Current frame size: %s", frameSizeName);
     } else {
-      Serial.println("⚠️ Camera sensor not found!");
+      DEBUG_PRINTLN("⚠️ Camera sensor not found!");
     }
 
     return ESP_OK;
@@ -242,13 +242,13 @@ static esp_err_t websocketHandler(httpd_req_t *req) {
 
 static esp_err_t streamHandler(httpd_req_t *req) {
   if (isClientActive) {
-    Serial.println("Stream rejected - client already active");
+    DEBUG_PRINTLN("Stream rejected - client already active");
     httpd_resp_send_404(req);
     return ESP_FAIL;
   }
 
   isClientActive = true;
-  Serial.println("Stream started - client locked");
+  DEBUG_PRINTLN("Stream started - client locked");
 
   camera_fb_t *frameBuffer = NULL;
   esp_err_t res = ESP_OK;
@@ -258,7 +258,7 @@ static esp_err_t streamHandler(httpd_req_t *req) {
 
   sensor_t *s = esp_camera_sensor_get();
   if (!s) {
-    Serial.println("NO SENSOR DETECTED");
+    DEBUG_PRINTLN("NO SENSOR DETECTED");
     httpd_resp_send_404(req);
     return ESP_FAIL;
   }
@@ -316,7 +316,7 @@ static esp_err_t streamHandler(httpd_req_t *req) {
   }
 
   isClientActive = false;
-  Serial.println("Stream ended - client unlocked");
+  DEBUG_PRINTLN("Stream ended - client unlocked");
   car.stop();
   car.turnFlashOff();
   return res;
@@ -328,7 +328,7 @@ static esp_err_t capturePhotoHandler(httpd_req_t *req) {
   sensor_t *s = esp_camera_sensor_get();
 
   if (!s) {
-    Serial.println("Camera sensor not found");
+    DEBUG_PRINTLN("Camera sensor not found");
     httpd_resp_send_500(req);
     return ESP_FAIL;
   }
@@ -336,7 +336,7 @@ static esp_err_t capturePhotoHandler(httpd_req_t *req) {
   fb = esp_camera_fb_get();
 
   if (!fb) {
-    Serial.println("Camera capture failed");
+    DEBUG_PRINTLN("Camera capture failed");
     httpd_resp_send_500(req);
     return ESP_FAIL;
   }
@@ -351,7 +351,7 @@ static esp_err_t capturePhotoHandler(httpd_req_t *req) {
 
   if (fb->format == PIXFORMAT_JPEG) {
     res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
-    Serial.printf("VGA JPEG sent: %u bytes\n", fb->len);
+    DEBUG_PRINTF_LN("VGA JPEG sent: %u bytes", fb->len);
   }
 
   esp_camera_fb_return(fb);
@@ -403,7 +403,7 @@ void startCarServer() {
       .handler = styleHandler,
       .user_ctx = NULL};
 
-  Serial.printf("Starting web server on port: '%d'\n", config.server_port);
+  DEBUG_PRINTF_LN("Starting web server on port: '%d'", config.server_port);
 
   if (httpd_start(&camera_httpd, &config) == ESP_OK) {
     httpd_register_uri_handler(camera_httpd, &index_uri);
@@ -411,7 +411,7 @@ void startCarServer() {
     httpd_register_uri_handler(camera_httpd, &ws_uri);
     httpd_register_uri_handler(camera_httpd, &script_uri);
     httpd_register_uri_handler(camera_httpd, &style_uri);
-    Serial.println("WebSocket handler registered on /ws");
+    DEBUG_PRINTLN("WebSocket handler registered on /ws");
   }
 
   // Server for streaming on port 81
@@ -424,10 +424,10 @@ void startCarServer() {
       .handler = streamHandler,
       .user_ctx = NULL};
 
-  Serial.printf("Starting stream server on port: '%d'\n", config.server_port);
+  DEBUG_PRINTF_LN("Starting stream server on port: '%d'", config.server_port);
   
   if (httpd_start(&stream_httpd, &config) == ESP_OK) {
     httpd_register_uri_handler(stream_httpd, &stream_uri);
-    Serial.println("Stream server started on port 81");
+    DEBUG_PRINTLN("Stream server started on port 81");
   }
 }

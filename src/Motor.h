@@ -91,12 +91,12 @@ public:
     case Direction::FORWARD:
       ledcWrite(_pwmChannel1, _currentSpeed);
       ledcWrite(_pwmChannel2, 0);
-      Serial.printf("Motor FORWARD - Speed: %d\n", _currentSpeed);
+      DEBUG_PRINTF_LN("Motor FORWARD - Speed: %d", _currentSpeed);
       break;
     case Direction::BACKWARD:
       ledcWrite(_pwmChannel1, 0);
       ledcWrite(_pwmChannel2, _currentSpeed);
-      Serial.printf("Motor BACKWARD - Speed: %d\n", _currentSpeed);
+      DEBUG_PRINTF_LN("Motor BACKWARD - Speed: %d", _currentSpeed);
       break;
     default:
       break;

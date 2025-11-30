@@ -30,11 +30,26 @@
 // #define CAMERA_MODEL_DFRobot_FireBeetle2_ESP32S3 // Has PSRAM
 // #define CAMERA_MODEL_DFRobot_Romeo_ESP32S3 // Has PSRAM
 
+#define DEBUG 1 // Uncomment to enable debug output
+#ifdef DEBUG
+  #define DEBUG_BEGIN() Serial.begin(115200)
+  #define DEBUG_PRINT(x) Serial.print(x)
+  #define DEBUG_PRINTLN(x) Serial.println(x)
+  #define DEBUG_PRINTF(...) Serial.printf(__VA_ARGS__)
+  #define DEBUG_PRINTF_LN(...) do { Serial.printf(__VA_ARGS__); Serial.println(); } while(0)
+#else
+  #define DEBUG_BEGIN()
+  #define DEBUG_PRINT(x)
+  #define DEBUG_PRINTLN(x)
+  #define DEBUG_PRINTF(...)
+  #define DEBUG_PRINTF_LN(...)
+#endif
+
 // Car pin definitions
 #define SERVO_X_PIN 2
 #define SERVO_X_CHANNEL 6
 
-#define SERVO_Y_PIN 3
+#define SERVO_Y_PIN 3 // RX pin on AI Thinker board Turn off DEBUG
 #define SERVO_Y_CHANNEL 7
 
 #define RIGHT_MOTOR_IN1 12
