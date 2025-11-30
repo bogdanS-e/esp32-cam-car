@@ -21,7 +21,7 @@ static camera_config_t camera_config = {
     .pin_vsync = VSYNC_GPIO_NUM,
     .pin_href = HREF_GPIO_NUM,
     .pin_pclk = PCLK_GPIO_NUM,
-    .xclk_freq_hz = 20000000,
+    .xclk_freq_hz = 19000000,
     .ledc_timer = LEDC_TIMER_0,
     .ledc_channel = LEDC_CHANNEL_0,
     .pixel_format = PIXFORMAT_JPEG,
@@ -52,6 +52,7 @@ public:
     bool res = servoX.attach(SERVO_X_PIN, 6);
     Serial.printf("Servo X attach result: %s\n", res ? "SUCCESS" : "FAILURE");
     servoX.write(90);
+    delay(100);
 
     lastCommandTime = nowMs();
 
@@ -160,11 +161,9 @@ private:
 
   void updateServo() {
     uint64_t now = nowMs();
-    const int stepDelay = 5;
-
-    int64_t diff = elapsedSince(lastUpdate);
-
-    if (diff < stepDelay) {
+    const int stepDelay = 40;
+    
+    if (now - lastUpdate < stepDelay) {
       return;
     }
 
@@ -174,12 +173,18 @@ private:
       return;
     }
 
-    const int delta = targetAngleX - currentAngleX;
-    const int step = constrain(abs(delta) / 4 + 1, 1, 8);
-    currentAngleX += (delta > 0) ? step : -step;
-
-    if ((delta > 0 && currentAngleX > targetAngleX) || (delta < 0 && currentAngleX < targetAngleX)) {
-      currentAngleX = targetAngleX;
+    const int step = 2;
+    
+    if (currentAngleX < targetAngleX) {
+      currentAngleX += step;
+      if (currentAngleX > targetAngleX) {
+        currentAngleX = targetAngleX;
+      }
+    } else {
+      currentAngleX -= step;
+      if (currentAngleX < targetAngleX) {
+        currentAngleX = targetAngleX;
+      }
     }
 
     servoX.write(currentAngleX);
