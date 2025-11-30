@@ -30,7 +30,7 @@
 // #define CAMERA_MODEL_DFRobot_FireBeetle2_ESP32S3 // Has PSRAM
 // #define CAMERA_MODEL_DFRobot_Romeo_ESP32S3 // Has PSRAM
 
-#define DEBUG 1 // Uncomment to enable debug output
+//#define DEBUG 1 // Uncomment to enable debug output
 #ifdef DEBUG
   #define DEBUG_BEGIN() Serial.begin(115200)
   #define DEBUG_PRINT(x) Serial.print(x)

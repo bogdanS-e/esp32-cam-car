@@ -88,7 +88,7 @@ void handleCarCommand(const char *command, httpd_req_t *req) {
     int x, y;
 
     if (sscanf(command + 11, "%d_%d", &x, &y) == 2) {
-      car.setCameraX(x);
+      car.setCameraPosition(x, y);
     }
 
     return;
