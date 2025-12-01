@@ -4,6 +4,10 @@
 #include "Motor.h"
 #include <Servo.h>
 
+#define SERVO_Y_MIN_ANGLE 70
+#define SERVO_Y_MAX_ANGLE 180
+#define SERVO_Y_INITIAL_ANGLE 135
+
 static camera_config_t camera_config = {
     .pin_pwdn = PWDN_GPIO_NUM,
     .pin_reset = RESET_GPIO_NUM,
@@ -21,7 +25,7 @@ static camera_config_t camera_config = {
     .pin_vsync = VSYNC_GPIO_NUM,
     .pin_href = HREF_GPIO_NUM,
     .pin_pclk = PCLK_GPIO_NUM,
-    .xclk_freq_hz = 19000000,
+    .xclk_freq_hz = 20000000,
     .ledc_timer = LEDC_TIMER_0,
     .ledc_channel = LEDC_CHANNEL_0,
     .pixel_format = PIXFORMAT_JPEG,
@@ -37,8 +41,8 @@ public:
       : isFlashOn(false),
         currentAngleX(90),
         targetAngleX(90),
-        currentAngleY(90),
-        targetAngleY(90),
+        currentAngleY(SERVO_Y_INITIAL_ANGLE),
+        targetAngleY(SERVO_Y_INITIAL_ANGLE),
         lastUpdate(0),
         lastCommandTime(0),
         motorStopped(true),
@@ -58,7 +62,7 @@ public:
 
     bool resY = servoY.attach(SERVO_Y_PIN, SERVO_Y_CHANNEL);
     DEBUG_PRINTF_LN("Servo Y attach result: %s", resY ? "SUCCESS" : "FAILURE");
-    servoY.write(90);
+    servoY.write(SERVO_Y_INITIAL_ANGLE);
     delay(100);
 
     lastCommandTime = nowMs();
@@ -153,7 +157,21 @@ public:
 
   void setCameraY(int y) {
     y = constrain(y, -100, 100);
-    targetAngleY = map(y, -100, 100, 0, 180);
+    // Map y in [-100, 0] to [SERVO_Y_MIN_ANGLE, SERVO_Y_INITIAL_ANGLE]
+    // Map y in [0, 100] to [SERVO_Y_INITIAL_ANGLE, SERVO_Y_MAX_ANGLE]
+    int angleY;
+    if (y < 0) {
+      angleY = SERVO_Y_INITIAL_ANGLE + (y * (SERVO_Y_INITIAL_ANGLE - SERVO_Y_MIN_ANGLE)) / 100;
+    } else {
+      angleY = SERVO_Y_INITIAL_ANGLE + (y * (SERVO_Y_MAX_ANGLE - SERVO_Y_INITIAL_ANGLE)) / 100;
+    }
+
+    angleY = constrain(angleY, SERVO_Y_MIN_ANGLE, SERVO_Y_MAX_ANGLE);
+    targetAngleY = angleY;
+  }
+
+  void setCameraY2(int y) {
+    servoY.write(y);
   }
 
   void setCameraPosition(int x, int y) {
@@ -163,12 +181,12 @@ public:
 
   void resetCameraImmediately() {
     servoX.write(90);
-    servoY.write(90);
+    servoY.write(SERVO_Y_INITIAL_ANGLE);
     
     currentAngleX = 90;
     targetAngleX = 90;
-    currentAngleY = 90;
-    targetAngleY = 90;
+    currentAngleY = SERVO_Y_INITIAL_ANGLE;
+    targetAngleY = SERVO_Y_INITIAL_ANGLE;
     
     lastUpdate = nowMs();
     
