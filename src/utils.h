@@ -148,9 +148,9 @@ int getRSSIForClient(const uint8_t mac[6]) {
 
 void blink(int pin, int count, int delayMs = 200) {
   for (int i = 0; i < count; i++) {
+    digitalWrite(pin, HIGH);
+    delay(delayMs);
     digitalWrite(pin, LOW);
     delay(delayMs);
-    digitalWrite(pin, HIGH);
-      delay(delayMs);
   }
 }

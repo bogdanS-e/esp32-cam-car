@@ -13,10 +13,6 @@
 #include "carServer.h"
 #include "customApSuccess.h"
 
-#define LED_PIN 33
-#define LEDC_CHANNEL 0
-#define LEDC_FREQ 5000
-
 Car car;
 WiFiManager wm;
 bool mDNSStarted = false;
@@ -30,7 +26,7 @@ void ledTask(void *param) {
   int fadeDirection = 1;
 
   const int fadeStep = 5;
-  const int fadeIntervalMs = 30;
+  const int fadeIntervalMs = 40;
 
   for (;;) {
     unsigned long now = millis();
@@ -40,11 +36,11 @@ void ledTask(void *param) {
         lastFade = now;
         fadeValue += fadeDirection * fadeStep;
 
-        if (fadeValue >= 220) {
-          fadeValue = 220;
+        if (fadeValue >= 224) {
+          fadeValue = 224;
           fadeDirection = -1;
-        } else if (fadeValue <= 0) {
-          fadeValue = 0;
+        } else if (fadeValue <= 50) {
+          fadeValue = 50;
           fadeDirection = 1;
         }
 
@@ -77,7 +73,7 @@ void setup() {
   Serial.setDebugOutput(true);
 
   DEBUG_PRINTLN("=== ESP32-CAM with WebSocket Flash Control ===");
-  pinMode(33, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
 
   // blink indicate boot started
   blink(LED_PIN, 1, 1000);

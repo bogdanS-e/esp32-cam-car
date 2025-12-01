@@ -62,6 +62,10 @@
 #define LEFT_MOTOR_PWM_CHANNEL_1 3
 #define LEFT_MOTOR_PWM_CHANNEL_2 5
 
+#define LED_PIN 1 //33 TX pin on AI Thinker board
+#define LEDC_CHANNEL 0
+#define LEDC_FREQ 8000
+
 // Camera Pin Definitions
 #if defined(CAMERA_MODEL_WROVER_KIT)
 #define PWDN_GPIO_NUM -1
