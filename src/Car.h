@@ -161,6 +161,20 @@ public:
     setCameraY(y);
   }
 
+  void resetCameraImmediately() {
+    servoX.write(90);
+    servoY.write(90);
+    
+    currentAngleX = 90;
+    targetAngleX = 90;
+    currentAngleY = 90;
+    targetAngleY = 90;
+    
+    lastUpdate = nowMs();
+    
+    DEBUG_PRINTLN("Camera reset to center position");
+  }
+
 private:
   bool isFlashOn;
   Servo servoX;

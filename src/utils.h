@@ -130,6 +130,22 @@ int getClientRSSI() {
   return wifi_sta_list.sta[0].rssi;
 }
 
+int getRSSIForClient(const uint8_t mac[6]) {
+    wifi_sta_list_t wifi_sta_list;
+    if (esp_wifi_ap_get_sta_list(&wifi_sta_list) != ESP_OK) {
+        return 0;
+    }
+
+    for (int i = 0; i < wifi_sta_list.num; i++) {
+        if (memcmp(wifi_sta_list.sta[i].mac, mac, 6) == 0) {
+            return wifi_sta_list.sta[i].rssi;
+        }
+    }
+
+    return 0; // Клиент не найден
+}
+
+
 void blink(int pin, int count, int delayMs = 200) {
   for (int i = 0; i < count; i++) {
     digitalWrite(pin, LOW);

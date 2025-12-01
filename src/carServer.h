@@ -359,6 +359,8 @@ static esp_err_t capturePhotoHandler(httpd_req_t *req) {
 }
 
 static esp_err_t indexHandler(httpd_req_t *req) {
+  Serial.println("Index page requested");
+  Serial.println(isClientActive);
   const char *htmlToSend = isClientActive ? "/busy.min.html" : "/index.min.html";
   return serveStaticFile(req, htmlToSend);
 }
