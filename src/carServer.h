@@ -119,12 +119,11 @@ void handleCarCommand(const char *command, httpd_req_t *req) {
 
   if (strcmp(command, "ping") == 0) {
     int rssi = (WiFi.getMode() & WIFI_MODE_AP) ? getClientRSSI() : WiFi.RSSI();
-
-    char response[32];
-
-    snprintf(response, sizeof(response), "pong-%d", abs(rssi));
+    const char *flashState = car.getFlashState() ? "ON" : "OFF";
+    char response[40];
+    
+    snprintf(response, sizeof(response), "pong-%d-%s", abs(rssi), flashState);
     sendResponse(req, response);
-
     return;
   }
 
